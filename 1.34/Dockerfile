@@ -5,7 +5,7 @@ FROM cimg/base:edge
 LABEL maintainer="CircleCI Community & Partner Engineering Team <community-partner@circleci.com>"
 
 ENV DEBIAN_FRONTEND noninteractive
-ENV RUST_VERSION 1.34.0
+ENV RUST_VERSION 1.34.1
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
