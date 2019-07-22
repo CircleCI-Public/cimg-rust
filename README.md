@@ -32,6 +32,9 @@ Stub text.
 
 Working on CircleCI Docker images.
 
+### Adding new Rust versions
+To add a new version of Rust, add it to the `versions` array in the `manifests` file, as well as to the `rust-version` pipeline parameter `enum` at the top of the `config.yml` file.
+
 ### Commits to non-master branches
 Upon successful commits to non-master branches of this repository, Rust versions of this image and its Node variant will be pushed to `ccitest/rust` for any requisite post-deployment testing. Tags there will represent the branch and commit hash that triggered them. For example, a successful commit to a branch of this repository called `dev` would result in the creation of the following image/tag: `ccitest/rust:<rust-version>-dev-${CIRCLE_SHA1:0:7}"`, where `${CIRCLE_SHA1:0:7}"` represents the first six characters of that particular commit hash.
 

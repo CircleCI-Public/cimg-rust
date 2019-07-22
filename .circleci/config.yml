@@ -20,8 +20,8 @@ parameters:
 
   tag:
     type: enum
-    enum: ["$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}", edge, stable]
-    default: "$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}"
+    enum: ["${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}", edge, stable]
+    default: "${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}"
 
   target:
     type: enum
