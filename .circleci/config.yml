@@ -123,13 +123,13 @@ jobs:
 
             for version in "${versions[@]}"
             do
-              curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d '{
-                "branch": "${CIRCLE_BRANCH}",
-                "parameters": {
-                  "build-rust<<#parameters.node>>-node<</parameters.node>>": true,
-                  "rust-version": "$version"
+              curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d "{
+                \"branch\": \"${CIRCLE_BRANCH}\",
+                \"parameters\": {
+                  \"build-rust<<#parameters.node>>-node<</parameters.node>>\": true,
+                  \"rust-version\": \"${version}\"
                 }
-              }' https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
+              }" https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
             done
 
 workflows:
