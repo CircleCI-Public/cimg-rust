@@ -1,14 +1,13 @@
 version: 2.1
 
 parameters:
-  build-image:
+  build-rust:
     type: boolean
     default: false
 
-  variant:
-    type: enum
-    enum: ["", node]
-    default: ""
+  build-rust-node:
+    type: boolean
+    default: false
 
   tag:
     type: enum
@@ -125,9 +124,8 @@ jobs:
               curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d '{
                 "branch": "$CIRCLE_BRANCH",
                 "parameters": {
-                  "build-image": true,
-                  "rust-version": "$version"\<<#parameters.node>>,
-                  "variant": node\<</parameteres.node>>
+                  "build-rust<<#parameters.node>>-node<</parameters.node>>": true,
+                  "rust-version": "$version"
                 }
               }' https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
             done
@@ -189,7 +187,7 @@ workflows:
           requires: [lint-rust-ccitest-node]
 
   build-test-deploy:
-    when: <<pipeline.parameters.build-image>>
+    when: <<pipeline.parameters.build-rust>>
     jobs:
       - prepare-dockerfiles:
           name: prepare-dockerfiles-rust-<<pipeline.parameters.rust-version>>
@@ -213,7 +211,7 @@ workflows:
           requires: [prepare-dockerfiles-rust-<<pipeline.parameters.rust-version>>]
 
   build-test-deploy-node:
-    when: <<pipeline.parameters.variant>>
+    when: <<pipeline.parameters.build-rust-node>>
     jobs:
       - prepare-dockerfiles:
           name: prepare-dockerfiles-rust-<<pipeline.parameters.rust-version>>-node
