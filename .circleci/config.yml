@@ -122,7 +122,7 @@ workflows:
           checkout: false
           attach-workspace: true
           workspace-root: ~/project
-          dockerfiles: *dockerfiles
+          dockerfiles: *node-dockerfiles
           filters: *dev-filters
           requires: [prepare-dockerfiles-rust-edge-node-dev]
 
