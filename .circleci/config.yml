@@ -10,6 +10,16 @@ parameters:
     enum: ["", node]
     default: ""
 
+  tag:
+    type: enum
+    enum: ["$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}", edge, stable]
+    default: "$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}"
+
+  target:
+    type: enum
+    enum: [ccitest, cimg]
+    default: ccitest
+
   rust-version:
     type: enum
     enum: ["", "1.34", "1.34.0", "1.34.1", "1.34.2", "1.35", "1.35.0", "1.36", "1.36.0"]
@@ -91,10 +101,10 @@ jobs:
 
       - persist_to_workspace:
           root: ~/
-          paths: project<<#parameters.variant>>/<<parameters.variant>><</parameters.variant>>
+          paths: project
 
       - store_artifacts:
-          path: ~/project<<#parameters.variant>>/<<parameters.variant>><</parameters.variant>>
+          path: ~/project
 
 
 workflows:
@@ -106,7 +116,7 @@ workflows:
   #   jobs:
 
 
-  commit-edge-dev:
+  commit-edge-dev-lint:
     jobs:
       - prepare-dockerfiles:
           name: prepare-dockerfiles-rust-edge-dev
@@ -116,14 +126,32 @@ workflows:
 
       - docker/hadolint:
           name: lint-rust-edge-dev
+          context: image-publishing
           checkout: false
           attach-workspace: true
           workspace-root: ~/
           dockerfiles: *dockerfiles
           filters: *dev-filters
           requires: [prepare-dockerfiles-rust-edge-dev]
+          post-steps:
+            - run:
+                name: Trigger image build/test/deploy
+                command: |
+                  source ./manifest
 
-  commit-edge-dev-node:
+                  for version in "${versions[@]}"
+                  do
+                    echo "$version"
+
+                    curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d '{
+                      "parameters": {
+                        "build-image": "true",
+                        "rust-version": "$version"
+                      }
+                    }' https://circleci.com/api/v2/project/github/CircleCI-Public/cimg-rust/pipeline
+                  done
+
+  commit-edge-dev-node-lint:
     jobs:
       - prepare-dockerfiles:
           name: prepare-dockerfiles-rust-edge-node-dev
@@ -134,12 +162,39 @@ workflows:
 
       - docker/hadolint:
           name: lint-rust-edge-node-dev
+          context: image-publishing
           checkout: false
           attach-workspace: true
           workspace-root: ~/
           dockerfiles: *node-dockerfiles
           filters: *dev-filters
           requires: [prepare-dockerfiles-rust-edge-node-dev]
+
+  build-test-deploy:
+    when: <<pipeline.parameters.build-image>>
+    jobs:
+      - prepare-dockerfiles:
+          name: prepare-dockerfiles-rust-<<pipeline.parameters.tag>>
+          base-org-image-tag: cimg/base:<<pipeline.parameters.tag>>
+          step-name: Prepare cimg/rust:<<pipeline.parameters.tag>> Dockerfiles from template
+
+      - cimg/build-test-deploy:
+          name: rust-<<pipeline.parameters.rust-version>>-edge-dev
+          context: image-publishing
+          checkout: false
+          attach-workspace: true
+          workspace-root: ~/
+          dockerfile-path: ~/project/<<pipeline.parameters.rust-version>>
+          image-name: <<pipeline.parameters.target>>/rust
+          image-tag: <<pipeline.parameters.tag>>
+          extra-build-args: --pull
+          goss-yaml-dir-path: ~/project
+          test-suite-name: rust
+          deploy: true
+          publish-tags: latest
+          requires: [prepare-dockerfiles-rust-<<pipeline.parameters.tag>>]
+
+  # build-test-deploy-node:
 
       # - cimg/build-test-deploy:
       #     name: ubuntu-edge-dev

@@ -1,0 +1,3 @@
+command:
+  cargo --version:
+    exit-status: 0
