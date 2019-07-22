@@ -138,14 +138,6 @@ jobs:
             done
 
 workflows:
-  # monthly-cron:
-  #   triggers:
-  #     - schedule:
-  #         cron: "0 0 2 * *"
-  #         filters: *master-filters
-  #   jobs:
-
-
   commit-ccitest-lint:
     when: <<pipeline.parameters.commit>>
     jobs:
