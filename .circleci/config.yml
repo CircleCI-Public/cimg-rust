@@ -30,7 +30,7 @@ parameters:
 
 orbs:
   bt: circleci/build-tools@2.6.3
-  cimg: cci-dev/cimg@0.0.22
+  cimg: cci-dev/cimg@0.0.23
   docker: circleci/docker@0.5.12
 
 dev-filters: &dev-filters
@@ -42,7 +42,7 @@ master-filters: &master-filters
     only: master
 
 dockerfiles: &dockerfiles
-  1.34.0/Dockerfile,1.34.1/Dockerfile,1.34.2/Dockerfile,1.35.0/Dockerfile,1.36.0/Dockerfile
+  rust/1.34.0/Dockerfile,rust/1.34.1/Dockerfile,rust/1.34.2/Dockerfile,rust/1.35.0/Dockerfile,rust/1.36.0/Dockerfile
 
 node-dockerfiles: &node-dockerfiles
   node/1.34.0/Dockerfile,node/1.34.1/Dockerfile,node/1.34.2/Dockerfile,node/1.35.0/Dockerfile,node/1.36.0/Dockerfile
@@ -68,6 +68,8 @@ commands:
 
             <<#parameters.variant>>mkdir -p <<parameters.variant>>
             cd <<parameters.variant>><</parameters.variant>>
+            <<^parameters.variant>>mkdir -p rust
+            cd rust<</parameters.variant>>
 
             for version in "${versions[@]}"
             do
@@ -201,7 +203,9 @@ workflows:
 
       - cimg/build-test-deploy:
           name: rust-<<pipeline.parameters.rust-version>>
+          executor: cimg/base
           context: image-publishing
+          use-remote-docker: true
           restore-cache: true
           cache-key: rust-dockerfiles-{{ .Branch }}-{{ .Revision }}
           dockerfile-path: ~/project/<<pipeline.parameters.rust-version>>
@@ -225,7 +229,9 @@ workflows:
 
       - cimg/build-test-deploy:
           name: rust-<<pipeline.parameters.rust-version>>-node
+          executor: cimg/base
           context: image-publishing
+          use-remote-docker: true
           restore-cache: true
           cache-key: rust-dockerfiles-node-{{ .Branch }}-{{ .Revision }}
           dockerfile-path: ~/project/node/<<pipeline.parameters.rust-version>>
