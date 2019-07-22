@@ -1,28 +1,160 @@
 version: 2.1
 
-workflows:
-  main:
-    jobs:
-      - build:
-          context: orb-publishing
+orbs:
+  bt: circleci/build-tools@2.6.3
+  cimg: cci-dev/cimg@0.0.19
+  docker: circleci/docker@0.5.12
+
+dev-filters: &dev-filters
+  branches:
+    ignore: master
+
+master-filters: &master-filters
+  branches:
+    only: master
+
+dockerfiles: &dockerfiles
+  1.34/Dockerfile,1.34.0/Dockerfile,1.34.1/Dockerfile,1.34.2/Dockerfile,1.35/Dockerfile,1.35.0/Dockerfile,1.36/Dockerfile,1.36.0/Dockerfile
+
+commands:
+  prepare-dockerfiles-from-template:
+    parameters:
+      base-org-image-tag:
+        type: string
+      step-name:
+        type: string
+      variant:
+        type: enum
+        enum: ["", node]
+        default: ""
+    steps:
+      - run:
+          name: <<parameters.step-name>>
+          command: |
+            BASE=<<parameters.base-org-image-tag>>
+
+            source .manifest
+
+            for version in "${versions[@]}"
+            do
+              echo "$version"
+
+              mkdir -p "$version"
+
+              sed -r -e 's!%%BASE_ORG_BASE_IMAGE_BASE_TAG%%!'"$BASE"'!g' \
+                Dockerfile.template > "$version/Dockerfile"
+
+              perl -i -pe 's!%%RUST_VERSION%%!'"$version"'!g' "$version.Dockerfile"
+            done
 
 jobs:
-  build:
-    docker:
-      - image: cibuilds/docker:18.09
+  prepare-dockerfiles:
+    executor: cimg/base
+    parameters:
+      base-org-image-tag:
+        type: string
+      step-name:
+        type: string
+
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      # temp until a custom docker image with Bash is built
-      - run: apk add --update --no-cache bash
-      - run:
-          name: "Build Docker Images"
-          command: ./build-images.sh
-      - deploy:
-          name: "Publish Docker Images (master branch only)"
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-              docker push cimg/rust
-            fi
+
+      - prepare-dockerfiles-from-template:
+          base-org-image-tag: <<parameters.base-org-image-tag>>
+          step-name: <<parameters.step-name>>
+
+      - persist_to_workspace:
+          root: ~/
+          paths: project
+
+
+workflows:
+  # monthly-cron:
+  #   triggers:
+  #     - schedule:
+  #         cron: "0 0 2 * *"
+  #         filters: *master-filters
+  #   jobs:
+
+
+  commit-edge-dev:
+    jobs:
+      - prepare-dockerfiles:
+          base-org-image-tag: cimg/base:edge
+          step-name: Prepare cimg/rust:edge Dockerfiles from template
+
+      - docker/hadolint:
+          name: lint-rust-edge-dev
+          checkout: false
+          attach-workspace: true
+          workspace-root: ~/
+          dockerfiles: *dockerfiles
+          filters: *dev-filters
+          requires: [prepare-dockerfiles]
+
+      # - cimg/build-test-deploy:
+      #     name: ubuntu-edge-dev
+      #     context: image-publishing
+      #     dockerfile-path: ubuntu
+      #     image-name: ccitest/base
+      #     image-tag: "$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}"
+      #     extra-build-args: --pull
+      #     goss-yaml-dir-path: ubuntu
+      #     test-suite-name: ubuntu
+      #     deploy: true
+      #     publish-tags: latest
+      #     filters: *dev-filters
+      #     requires: [lint-ubuntu-edge-dev]
+
+      # - docker/hadolint:
+      #     name: lint-node-edge-dev
+      #     pre-steps: [bt/install-ci-tools]
+      #     checkout: false
+      #     attach-workspace: true
+      #     workspace-root: ~/
+      #     dockerfile: variant-node/Dockerfile
+      #     ignore-rules: *lint-ignore-rules
+      #     filters: *dev-filters
+      #     requires: [lint-ubuntu-edge-dev]
+
+      # - cimg/build-test-deploy:
+      #     name: node-edge-dev
+      #     context: image-publishing
+      #     checkout: false
+      #     attach-workspace: true
+      #     workspace-root: ~/
+      #     dockerfile-path: variant-node
+      #     image-name: ccitest/base
+      #     image-tag: "$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}-node"
+      #     extra-build-args: --pull
+      #     goss-yaml-dir-path: variant-node
+      #     test-suite-name: variant-node
+      #     deploy: true
+      #     filters: *dev-filters
+      #     requires: [ubuntu-edge-dev]
+
+  # commit-edge-master:
+  #   jobs:
+
+
+
+# jobs:
+#   build:
+#     docker:
+#       - image: cibuilds/docker:18.09
+#     steps:
+#       - checkout
+#       - setup_remote_docker:
+#           docker_layer_caching: true
+#       # temp until a custom docker image with Bash is built
+#       - run: apk add --update --no-cache bash
+#       - run:
+#           name: "Build Docker Images"
+#           command: ./build-images.sh
+#       - deploy:
+#           name: "Publish Docker Images (master branch only)"
+#           command: |
+#             if [ "${CIRCLE_BRANCH}" == "master" ]; then
+#               echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+#               docker push cimg/rust
+#             fi
