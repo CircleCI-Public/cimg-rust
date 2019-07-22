@@ -130,7 +130,7 @@ jobs:
               curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d "{
                 \"branch\": \"${CIRCLE_BRANCH}\",
                 \"parameters\": {
-                  \"commit\": \"false\"
+                  \"commit\": false,
                   \"build-rust<<#parameters.node>>-node<</parameters.node>>\": true,
                   \"rust-version\": \"${version}\"
                 }
