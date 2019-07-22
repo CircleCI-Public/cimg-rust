@@ -1,11 +1,9 @@
 version: 2.1
 
-
 orbs:
   bt: circleci/build-tools@2.6.3
   cimg: cci-dev/cimg@0.0.23
   docker: circleci/docker@0.5.12
-
 
 parameters:
   commit:
@@ -35,8 +33,45 @@ parameters:
     enum: ["", "1.34.0", "1.34.1", "1.34.2", "1.35.0", "1.36.0"]
     default: ""
 
-
 jobs:
+  trigger-pipeline-builds:
+    executor: cimg/base
+    parameters:
+      node:
+        type: boolean
+        default: false
+      tag:
+        type: enum
+        enum: ["$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}", edge, stable]
+        default: "$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}"
+      target:
+        type: enum
+        enum: [ccitest, cimg]
+        default: ccitest
+
+    steps:
+      - checkout
+      - run:
+          name: Trigger image build/test/deploy
+          command: |
+            source ./manifest
+
+            echo "${CIRCLE_BRANCH}"
+
+            for version in "${versions[@]}"
+            do
+              curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d "{
+                \"branch\": \"${CIRCLE_BRANCH}\",
+                \"parameters\": {
+                  \"commit\": false,
+                  \"build-rust<<#parameters.node>>-node<</parameters.node>>\": true,
+                  \"rust-version\": \"${version}\",
+                  \"tag\": \"<<parameters.tag>>\",
+                  \"target\": \"<<parameters.target>>\",
+                }
+              }" https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
+            done
+
   prepare-dockerfiles:
     executor: cimg/default
     parameters:
@@ -85,34 +120,6 @@ jobs:
       - store_artifacts:
           path: ~/project
 
-  trigger-pipeline-builds:
-    executor: cimg/base
-    parameters:
-      node:
-        type: boolean
-        default: false
-    steps:
-      - checkout
-      - run:
-          name: Trigger image build/test/deploy
-          command: |
-            source ./manifest
-
-            echo "${CIRCLE_BRANCH}"
-
-            for version in "${versions[@]}"
-            do
-              curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d "{
-                \"branch\": \"${CIRCLE_BRANCH}\",
-                \"parameters\": {
-                  \"commit\": false,
-                  \"build-rust<<#parameters.node>>-node<</parameters.node>>\": true,
-                  \"rust-version\": \"${version}\"
-                }
-              }" https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
-            done
-
-
 dev-filters: &dev-filters
   branches:
     ignore: master
@@ -129,7 +136,7 @@ node-dockerfiles: &node-dockerfiles
 
 
 workflows:
-  commit-ccitest-lint:
+  commit-ccitest-lint-dev:
     when: <<pipeline.parameters.commit>>
     jobs:
       - prepare-dockerfiles:
@@ -150,9 +157,10 @@ workflows:
       - trigger-pipeline-builds:
           name: trigger-pipeline-builds-ccitest
           context: image-publishing
+          filters: *dev-filters
           requires: [lint-rust-ccitest]
 
-  commit-ccitest-node-lint:
+  commit-ccitest-node-lint-dev:
     when: <<pipeline.parameters.commit>>
     jobs:
       - prepare-dockerfiles:
@@ -176,7 +184,63 @@ workflows:
           name: trigger-pipeline-builds-ccitest-node
           context: image-publishing
           node: true
+          filters: *dev-filters
           requires: [lint-rust-ccitest-node]
+
+  commit-edge-lint-master:
+    when: <<pipeline.parameters.commit>>
+    jobs:
+      - prepare-dockerfiles:
+          name: prepare-dockerfiles-rust-edge
+          base-org-image-tag: cimg/base:edge
+          step-name: Prepare cimg/rust:edge Dockerfiles from template
+          filters: *master-filters
+
+      - docker/hadolint:
+          name: lint-rust-edge
+          checkout: false
+          attach-workspace: true
+          workspace-root: ~/
+          dockerfiles: *dockerfiles
+          filters: *master-filters
+          requires: [prepare-dockerfiles-rust-edge]
+
+      - trigger-pipeline-builds:
+          name: trigger-pipeline-builds-edge
+          context: image-publishing
+          tag: edge
+          target: cimg
+          filters: *master-filters
+          requires: [lint-rust-edge]
+
+  commit-edge-node-lint-master:
+    when: <<pipeline.parameters.commit>>
+    jobs:
+      - prepare-dockerfiles:
+          name: prepare-dockerfiles-rust-edge-node
+          base-org-image-tag: cimg/base:edge-node
+          step-name: Prepare cimg/rust:edge-node Dockerfiles from template
+          variant: node
+          filters: *master-filters
+
+      - docker/hadolint:
+          name: lint-rust-edge-node
+          context: image-publishing
+          checkout: false
+          attach-workspace: true
+          workspace-root: ~/
+          dockerfiles: *node-dockerfiles
+          filters: *master-filters
+          requires: [prepare-dockerfiles-rust-edge-node]
+
+      - trigger-pipeline-builds:
+          name: trigger-pipeline-builds-edge-node
+          context: image-publishing
+          tag: edge
+          target: cimg
+          node: true
+          filters: *master-filters
+          requires: [lint-rust-edge-node]
 
   build-test-deploy:
     when: <<pipeline.parameters.build-rust>>
@@ -188,7 +252,7 @@ workflows:
           cache-key: rust-dockerfiles-{{ .Branch }}-{{ .Revision }}
           dockerfile-path: ~/project/rust/<<pipeline.parameters.rust-version>>
           image-name: <<pipeline.parameters.target>>/rust
-          image-tag: <<pipeline.parameters.rust-version>>
+          image-tag: <<pipeline.parameters.rust-version>>-<<pipeline.parameters.tag>>
           extra-build-args: --pull
           goss-yaml-dir-path: ~/project
           test-suite-name: rust
@@ -205,8 +269,8 @@ workflows:
           cache-key: rust-dockerfiles-node-{{ .Branch }}-{{ .Revision }}
           dockerfile-path: ~/project/node/<<pipeline.parameters.rust-version>>
           image-name: <<pipeline.parameters.target>>/rust
-          image-tag: <<pipeline.parameters.rust-version>>-node
+          image-tag: <<pipeline.parameters.rust-version>>-<<pipeline.parameters.tag>>-node
           extra-build-args: --pull
           goss-yaml-dir-path: ~/project
-          test-suite-name: rust
+          test-suite-name: rust-node
           deploy: true
