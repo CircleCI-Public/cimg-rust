@@ -48,7 +48,7 @@ commands:
               mkdir -p "$version"
 
               sed -r -e 's!%%BASE_ORG_BASE_IMAGE_BASE_TAG%%!'"$BASE"'!g' \
-                Dockerfile.template > "$version/Dockerfile"
+                ~/project/Dockerfile.template > "$version/Dockerfile"
 
               perl -i -pe 's!%%RUST_VERSION%%!'"$version"'!g' "$version/Dockerfile"
             done
@@ -108,12 +108,13 @@ workflows:
           filters: *dev-filters
           requires: [prepare-dockerfiles-rust-edge-dev]
 
+  commit-edge-dev-node:
+    jobs:
       - prepare-dockerfiles:
           name: prepare-dockerfiles-rust-edge-node-dev
           base-org-image-tag: cimg/base:edge-node
           step-name: Prepare cimg/rust:edge-node Dockerfiles from template
           variant: node
-          requires: [lint-rust-edge-dev]
           filters: *dev-filters
 
       - docker/hadolint:
