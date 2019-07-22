@@ -16,6 +16,9 @@ master-filters: &master-filters
 dockerfiles: &dockerfiles
   1.34/Dockerfile,1.34.0/Dockerfile,1.34.1/Dockerfile,1.34.2/Dockerfile,1.35/Dockerfile,1.35.0/Dockerfile,1.36/Dockerfile,1.36.0/Dockerfile
 
+node-dockerfiles: &node-dockerfiles
+  node/1.34/Dockerfile,node/1.34.0/Dockerfile,node/1.34.1/Dockerfile,node/1.34.2/Dockerfile,node/1.35/Dockerfile,node/1.35.0/Dockerfile,node/1.36/Dockerfile,node/1.36.0/Dockerfile
+
 commands:
   prepare-dockerfiles-from-template:
     parameters:
@@ -34,6 +37,9 @@ commands:
             BASE=<<parameters.base-org-image-tag>>
 
             source ./manifest
+
+            <<#parameters.variant>>mkdir -p <<parameters.variant>>
+            cd <<parameters.variant>><</parameters.variant>>
 
             for version in "${versions[@]}"
             do
@@ -55,6 +61,10 @@ jobs:
         type: string
       step-name:
         type: string
+      variant:
+        type: enum
+        enum: ["", node]
+        default: ""
 
     steps:
       - checkout
@@ -62,13 +72,14 @@ jobs:
       - prepare-dockerfiles-from-template:
           base-org-image-tag: <<parameters.base-org-image-tag>>
           step-name: <<parameters.step-name>>
+          variant: <<parameters.variant>>
 
       - persist_to_workspace:
           root: ~/
-          paths: project
+          paths: project<<#parameters.variant>>/<<parameters.variant>><</parameters.variant>>
 
       - store_artifacts:
-          path: ~/project
+          path: ~/project<<#parameters.variant>>/<<parameters.variant>><</parameters.variant>>
 
 
 workflows:
@@ -83,8 +94,10 @@ workflows:
   commit-edge-dev:
     jobs:
       - prepare-dockerfiles:
+          name: prepare-dockerfiles-rust-edge-dev
           base-org-image-tag: cimg/base:edge
           step-name: Prepare cimg/rust:edge Dockerfiles from template
+          filters: *dev-filters
 
       - docker/hadolint:
           name: lint-rust-edge-dev
@@ -93,7 +106,24 @@ workflows:
           workspace-root: ~/
           dockerfiles: *dockerfiles
           filters: *dev-filters
-          requires: [prepare-dockerfiles]
+          requires: [prepare-dockerfiles-rust-edge-dev]
+
+      - prepare-dockerfiles:
+          name: prepare-dockerfiles-rust-edge-node-dev
+          base-org-image-tag: cimg/base:edge-node
+          step-name: Prepare cimg/rust:edge-node Dockerfiles from template
+          variant: node
+          requires: [lint-rust-edge-dev]
+          filters: *dev-filters
+
+      - docker/hadolint:
+          name: lint-rust-edge-node-dev
+          checkout: false
+          attach-workspace: true
+          workspace-root: ~/project
+          dockerfiles: *dockerfiles
+          filters: *dev-filters
+          requires: [prepare-dockerfiles-rust-edge-node-dev]
 
       # - cimg/build-test-deploy:
       #     name: ubuntu-edge-dev

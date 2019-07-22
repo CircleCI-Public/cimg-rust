@@ -25,7 +25,7 @@ RUN curl -O --show-error --location --fail --retry 3 \
 
 ENV RUST_VERSION %%RUST_VERSION%%
 
-RUN	./rustup-init -y --no-modify-path --default-toolchain $RUST_VERSION \
+RUN	./rustup-init -y --no-modify-path --default-toolchain "$RUST_VERSION" \
 	&& rm rustup-init
 
 # Set default shell for users
