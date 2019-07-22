@@ -1,6 +1,10 @@
 version: 2.1
 
 parameters:
+  commit:
+    type: boolean
+    default: true
+
   build-rust:
     type: boolean
     default: false
@@ -126,6 +130,7 @@ jobs:
               curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d "{
                 \"branch\": \"${CIRCLE_BRANCH}\",
                 \"parameters\": {
+                  \"commit\": \"false\"
                   \"build-rust<<#parameters.node>>-node<</parameters.node>>\": true,
                   \"rust-version\": \"${version}\"
                 }
@@ -142,6 +147,7 @@ workflows:
 
 
   commit-ccitest-lint:
+    when: <<pipeline.parameters.commit>>
     jobs:
       - prepare-dockerfiles:
           name: prepare-dockerfiles-rust-ccitest
@@ -164,6 +170,7 @@ workflows:
           requires: [lint-rust-ccitest]
 
   commit-ccitest-node-lint:
+    when: <<pipeline.parameters.commit>>
     jobs:
       - prepare-dockerfiles:
           name: prepare-dockerfiles-rust-ccitest-node
@@ -199,7 +206,6 @@ workflows:
       - cimg/build-test-deploy:
           name: rust-<<pipeline.parameters.rust-version>>
           context: image-publishing
-          checkout: false
           attach-workspace: true
           workspace-root: ~/
           dockerfile-path: ~/project/<<pipeline.parameters.rust-version>>
@@ -224,7 +230,6 @@ workflows:
       - cimg/build-test-deploy:
           name: rust-<<pipeline.parameters.rust-version>>-node
           context: image-publishing
-          checkout: false
           attach-workspace: true
           workspace-root: ~/
           dockerfile-path: ~/project/<<pipeline.parameters.rust-version>>
