@@ -42,8 +42,8 @@ jobs:
         default: false
       tag:
         type: enum
-        enum: ["$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}", edge, stable]
-        default: "$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7}"
+        enum: ["${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}", edge, stable]
+        default: "${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}"
       target:
         type: enum
         enum: [ccitest, cimg]
@@ -67,7 +67,7 @@ jobs:
                   \"build-rust<<#parameters.node>>-node<</parameters.node>>\": true,
                   \"rust-version\": \"${version}\",
                   \"tag\": \"<<parameters.tag>>\",
-                  \"target\": \"<<parameters.target>>\",
+                  \"target\": \"<<parameters.target>>\"
                 }
               }" https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
             done
