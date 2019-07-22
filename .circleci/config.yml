@@ -191,7 +191,11 @@ workflows:
                   done
 
   build-test-deploy:
-    triggers: [api]
+    triggers:
+      - api:
+          filters:
+            branches:
+              ignore: [master]
     jobs:
       - prepare-dockerfiles:
           name: prepare-dockerfiles-rust
