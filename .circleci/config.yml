@@ -144,11 +144,12 @@ workflows:
                     echo "$version"
 
                     curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d '{
+                      "branch": "$CIRCLE_BRANCH",
                       "parameters": {
                         "build-image": true,
                         "rust-version": "$version"
                       }
-                    }' https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/tree/$CIRCLE_BRANCH/pipeline
+                    }' https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
                   done
 
   commit-edge-dev-node-lint:
@@ -180,6 +181,7 @@ workflows:
                     echo "$version"
 
                     curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d '{
+                      "branch": "$CIRCLE_BRANCH",
                       "parameters": {
                         "build-image": true,
                         "rust-version": "$version",
