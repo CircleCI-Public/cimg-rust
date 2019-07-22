@@ -145,10 +145,10 @@ workflows:
 
                     curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d '{
                       "parameters": {
-                        "build-image": "true",
+                        "build-image": true,
                         "rust-version": "$version"
                       }
-                    }' https://circleci.com/api/v2/project/github/CircleCI-Public/cimg-rust/pipeline
+                    }' https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
                   done
 
   commit-edge-dev-node-lint:
