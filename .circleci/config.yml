@@ -119,10 +119,12 @@ jobs:
           command: |
             source ./manifest
 
+            echo "${CIRCLE_BRANCH}"
+
             for version in "${versions[@]}"
             do
               curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d '{
-                "branch": "$CIRCLE_BRANCH",
+                "branch": "${CIRCLE_BRANCH}",
                 "parameters": {
                   "build-rust<<#parameters.node>>-node<</parameters.node>>": true,
                   "rust-version": "$version"
@@ -186,7 +188,7 @@ workflows:
           node: true
           requires: [lint-rust-ccitest-node]
 
-  build-test-deploy:
+  build-test-deploy-<<pipeline.parameters.rust-version>>:
     when: <<pipeline.parameters.build-rust>>
     jobs:
       - prepare-dockerfiles:
@@ -210,7 +212,7 @@ workflows:
           publish-tags: latest
           requires: [prepare-dockerfiles-rust-<<pipeline.parameters.rust-version>>]
 
-  build-test-deploy-node:
+  build-test-deploy-<<pipeline.parameters.rust-version>>-node:
     when: <<pipeline.parameters.build-rust-node>>
     jobs:
       - prepare-dockerfiles:
