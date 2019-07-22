@@ -19,9 +19,9 @@ parameters:
     default: false
 
   tag:
-    type: enum
-    enum: ["${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}", edge, stable]
+    type: string
     default: "${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}"
+    # edge, stable
 
   target:
     type: enum
@@ -41,9 +41,9 @@ jobs:
         type: boolean
         default: false
       tag:
-        type: enum
-        enum: ["${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}", edge, stable]
+        type: string
         default: "${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}"
+        # edge, stable
       target:
         type: enum
         enum: [ccitest, cimg]
