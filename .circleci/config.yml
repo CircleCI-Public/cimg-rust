@@ -33,7 +33,7 @@ commands:
           command: |
             BASE=<<parameters.base-org-image-tag>>
 
-            source .manifest
+            source ./manifest
 
             for version in "${versions[@]}"
             do
