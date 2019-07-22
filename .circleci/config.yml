@@ -148,7 +148,7 @@ workflows:
                         "build-image": true,
                         "rust-version": "$version"
                       }
-                    }' https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
+                    }' https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/tree/$CIRCLE_BRANCH/pipeline
                   done
 
   commit-edge-dev-node-lint:
@@ -179,44 +179,38 @@ workflows:
                   do
                     echo "$version"
 
-                    curl -X POST --header "Content-Type: application/json" -d '{
-                      "build_parameters": {
-                        "RUST_VERSION": "$version"
-                        "TAG": "$version-edge",
-                        "TARGET": ccitest
+                    curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d '{
+                      "parameters": {
+                        "build-image": true,
+                        "rust-version": "$version",
+                        "variant": "node"
                       }
-                    }
-
-                    "https://circleci.com/api/v1.1/project/github/CircleCI-Public/cimg-rust/tree/$CIRCLE_BRANCH?circle-token=$CIRCLE_TOKEN"
+                    }' https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
                   done
 
   build-test-deploy:
-    triggers:
-      - api:
-          filters:
-            branches:
-              ignore: [master]
+    when: <<pipeline.parameters.build-image>>
     jobs:
       - prepare-dockerfiles:
-          name: prepare-dockerfiles-rust
-          base-org-image-tag: "cimg/base:$TAG"
-          step-name: Prepare cimg/rust Dockerfiles from template
+          name: prepare-dockerfiles-rust-<<pipeline.parameters.tag>>
+          base-org-image-tag: cimg/base:<<pipeline.parameters.tag>>
+          step-name: Prepare cimg/rust:<<pipeline.parameters.tag>> Dockerfiles from template
 
       - cimg/build-test-deploy:
-          name: rust-edge-dev
+          name: rust-<<pipeline.parameters.rust-version>>-edge-dev
           context: image-publishing
           checkout: false
           attach-workspace: true
           workspace-root: ~/
-          dockerfile-path: "~/project/$RUST_VERSION"
-          image-name: "$TARGET/rust"
-          image-tag: "$TAG"
+          dockerfile-path: ~/project/<<pipeline.parameters.rust-version>>
+          image-name: <<pipeline.parameters.target>>/rust
+          image-tag: <<pipeline.parameters.tag>>
           extra-build-args: --pull
           goss-yaml-dir-path: ~/project
           test-suite-name: rust
           deploy: true
           publish-tags: latest
-          requires: [prepare-dockerfiles-rust]
+          requires: [prepare-dockerfiles-rust-<<pipeline.parameters.tag>>]
 
   # build-test-deploy-node:
 
