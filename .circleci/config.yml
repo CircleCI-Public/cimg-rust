@@ -1,5 +1,12 @@
 version: 2.1
 
+
+orbs:
+  bt: circleci/build-tools@2.6.3
+  cimg: cci-dev/cimg@0.0.23
+  docker: circleci/docker@0.5.12
+
+
 parameters:
   commit:
     type: boolean
@@ -28,27 +35,10 @@ parameters:
     enum: ["", "1.34.0", "1.34.1", "1.34.2", "1.35.0", "1.36.0"]
     default: ""
 
-orbs:
-  bt: circleci/build-tools@2.6.3
-  cimg: cci-dev/cimg@0.0.23
-  docker: circleci/docker@0.5.12
 
-dev-filters: &dev-filters
-  branches:
-    ignore: master
-
-master-filters: &master-filters
-  branches:
-    only: master
-
-dockerfiles: &dockerfiles
-  rust/1.34.0/Dockerfile,rust/1.34.1/Dockerfile,rust/1.34.2/Dockerfile,rust/1.35.0/Dockerfile,rust/1.36.0/Dockerfile
-
-node-dockerfiles: &node-dockerfiles
-  node/1.34.0/Dockerfile,node/1.34.1/Dockerfile,node/1.34.2/Dockerfile,node/1.35.0/Dockerfile,node/1.36.0/Dockerfile
-
-commands:
-  prepare-dockerfiles-from-template:
+jobs:
+  prepare-dockerfiles:
+    executor: cimg/default
     parameters:
       base-org-image-tag:
         type: string
@@ -59,6 +49,7 @@ commands:
         enum: ["", node]
         default: ""
     steps:
+      - checkout
       - run:
           name: <<parameters.step-name>>
           command: |
@@ -83,27 +74,6 @@ commands:
               perl -i -pe 's!%%RUST_VERSION%%!'"$version"'!g' "$version/Dockerfile"
             done
 
-jobs:
-  prepare-dockerfiles:
-    executor: cimg/base
-    parameters:
-      base-org-image-tag:
-        type: string
-      step-name:
-        type: string
-      variant:
-        type: enum
-        enum: ["", node]
-        default: ""
-
-    steps:
-      - checkout
-
-      - prepare-dockerfiles-from-template:
-          base-org-image-tag: <<parameters.base-org-image-tag>>
-          step-name: <<parameters.step-name>>
-          variant: <<parameters.variant>>
-
       - save_cache:
           paths: ~/project<<#parameters.variant>>/node<</parameters.variant>>
           key: rust-dockerfiles<<#parameters.variant>>-node<</parameters.variant>>-{{ .Branch }}-{{ .Revision }}
@@ -121,7 +91,6 @@ jobs:
       node:
         type: boolean
         default: false
-
     steps:
       - checkout
       - run:
@@ -142,6 +111,22 @@ jobs:
                 }
               }" https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
             done
+
+
+dev-filters: &dev-filters
+  branches:
+    ignore: master
+
+master-filters: &master-filters
+  branches:
+    only: master
+
+dockerfiles: &dockerfiles
+  rust/1.34.0/Dockerfile,rust/1.34.1/Dockerfile,rust/1.34.2/Dockerfile,rust/1.35.0/Dockerfile,rust/1.36.0/Dockerfile
+
+node-dockerfiles: &node-dockerfiles
+  node/1.34.0/Dockerfile,node/1.34.1/Dockerfile,node/1.34.2/Dockerfile,node/1.35.0/Dockerfile,node/1.36.0/Dockerfile
+
 
 workflows:
   commit-ccitest-lint:
@@ -196,19 +181,12 @@ workflows:
   build-test-deploy:
     when: <<pipeline.parameters.build-rust>>
     jobs:
-      # - prepare-dockerfiles:
-      #     name: prepare-dockerfiles-rust-<<pipeline.parameters.rust-version>>
-      #     base-org-image-tag: cimg/base:edge
-      #     step-name: Prepare <<pipeline.parameters.target>>/rust:<<pipeline.parameters.tag>> Dockerfiles from template
-
       - cimg/build-test-deploy:
           name: rust-<<pipeline.parameters.rust-version>>
-          executor: cimg/base
           context: image-publishing
-          use-remote-docker: true
           restore-cache: true
           cache-key: rust-dockerfiles-{{ .Branch }}-{{ .Revision }}
-          dockerfile-path: ~/project/<<pipeline.parameters.rust-version>>
+          dockerfile-path: ~/project/rust/<<pipeline.parameters.rust-version>>
           image-name: <<pipeline.parameters.target>>/rust
           image-tag: <<pipeline.parameters.rust-version>>
           extra-build-args: --pull
@@ -216,22 +194,13 @@ workflows:
           test-suite-name: rust
           deploy: true
           publish-tags: latest
-          # requires: [prepare-dockerfiles-rust-<<pipeline.parameters.rust-version>>]
 
   build-test-deploy-node:
     when: <<pipeline.parameters.build-rust-node>>
     jobs:
-      # - prepare-dockerfiles:
-      #     name: prepare-dockerfiles-rust-<<pipeline.parameters.rust-version>>-node
-      #     base-org-image-tag: cimg/base:edge-node
-      #     step-name: Prepare <<pipeline.parameters.target>>/rust:<<pipeline.parameters.tag>>-node Dockerfiles from template
-      #     variant: node
-
       - cimg/build-test-deploy:
           name: rust-<<pipeline.parameters.rust-version>>-node
-          executor: cimg/base
           context: image-publishing
-          use-remote-docker: true
           restore-cache: true
           cache-key: rust-dockerfiles-node-{{ .Branch }}-{{ .Revision }}
           dockerfile-path: ~/project/node/<<pipeline.parameters.rust-version>>
@@ -241,4 +210,3 @@ workflows:
           goss-yaml-dir-path: ~/project
           test-suite-name: rust
           deploy: true
-          # requires: [prepare-dockerfiles-rust-<<pipeline.parameters.rust-version>>-node]
