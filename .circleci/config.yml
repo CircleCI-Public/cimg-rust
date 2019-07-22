@@ -126,8 +126,8 @@ jobs:
                 "branch": "$CIRCLE_BRANCH",
                 "parameters": {
                   "build-image": true,
-                  "rust-version": "$version"<<#parameters.node>>,
-                  "variant": node<</parameteres.node>>
+                  "rust-version": "$version"\<<#parameters.node>>,
+                  "variant": node\<</parameteres.node>>
                 }
               }' https://circleci.com/api/v2/project/gh/CircleCI-Public/cimg-rust/pipeline
             done
