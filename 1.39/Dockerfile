@@ -1,0 +1,20 @@
+# vim:set ft=dockerfile:
+
+FROM cimg/base:2019.11
+
+LABEL maintainer="CircleCI Community & Partner Engineering Team <community-partner@circleci.com>"
+
+ENV RUST_VERSION=1.39.0 \
+	RUSTUP_HOME=/usr/local/rustup \
+	CARGO_HOME=/usr/local/cargo \
+	PATH=/usr/local/cargo/bin:$PATH
+
+RUN curl -O https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init && \
+	chmod +x rustup-init && \
+	./rustup-init -y --no-modify-path --default-toolchain $RUST_VERSION && \
+	rm rustup-init && \
+	cargo --version
+
+RUN rustup component add rustfmt
+
+WORKDIR /root/project
