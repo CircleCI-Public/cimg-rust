@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker build --file 1.38/Dockerfile -t cimg/rust:1.38.0  -t cimg/rust:1.38 .
+docker build --file 1.39/Dockerfile -t cimg/rust:1.39.0  -t cimg/rust:1.39 .
