@@ -52,10 +52,10 @@ This image contains the Rust programming language and its complete toolchain.
 
 ### Variants
 
-This image will have a Node.js variant in the future.
+This image has a Node.js variant.
 Variant images typically contain the same base software, but with a few additional modifications.
 The Node.js variant is the same Rust image but with Node.js also installed.
-The Node.js variant will be used by appending `-node` to the end of an existing `cimg/rust` tag.
+The Node.js variant can be used by appending `-node` to the end of an existing `cimg/rust` tag.
 
 ### Tagging Scheme
 
@@ -71,7 +71,7 @@ If you use the minor release tag, it will automatically point to future patch up
 For example, the tag `1.39` points to Rust v1.39.0 now, but when the next release comes out, it will point to Rust v1.39.1.
 
 `[-variant]` - Variant tags, if available, can optionally be used.
-Once the Node.js variant is available, it could be used like this: `cimg/rust:1.39-node`.
+For example, the Node.js variant could be used like this: `cimg/rust:1.39-node`.
 
 
 ## Development
