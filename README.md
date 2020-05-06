@@ -10,7 +10,7 @@
 
 [![CircleCI Build Status](https://circleci.com/gh/CircleCI-Public/cimg-rust.svg?style=shield)](https://circleci.com/gh/CircleCI-Public/cimg-rust) [![Software License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/CircleCI-Public/cimg-rust/master/LICENSE) [![Docker Pulls](https://img.shields.io/docker/pulls/cimg/rust)](https://hub.docker.com/r/cimg/rust) [![CircleCI Community](https://img.shields.io/badge/community-CircleCI%20Discuss-343434.svg)](https://discuss.circleci.com/c/ecosystem/circleci-images)
 
-***This image is in beta and is designed to supercede the original CircleCI Rust image, `circleci/rust`.***
+***This image is designed to supercede the legacy CircleCI Rust image, `circleci/rust`.***
 
 `cimg/rust` is a Docker image created by CircleCI with continuous integration builds in mind.
 Each tag contains a complete Rust version and toolchain (such as rustfmt), and any binaries and tools that are required for builds to complete successfully in a CircleCI environment.
@@ -35,14 +35,14 @@ For example:
 jobs:
   build:
     docker:
-      - image: cimg/rust:1.39.0
+      - image: cimg/rust:1.43.0
     steps:
       - checkout
       - run: cargo --version
 ```
 
 In the above example, the CircleCI Rust Docker image is used for the primary container.
-More specifically, the tag `1.39.0` is used meaning the version of Rust will be Rust v1.39.0.
+More specifically, the tag `1.43.0` is used meaning the version of Rust will be Rust v1.43.0.
 You can now use Rust within the steps for this job.
 
 
@@ -66,12 +66,12 @@ cimg/rust:<rust-version>[-variant]
 ```
 
 `<rust-version>` - The version of Rust to use.
-This can be a full SemVer point release (such as `1.39.0`) or just the minor release (such as `1.38`).
+This can be a full SemVer point release (such as `1.43.0`) or just the minor release (such as `1.43`).
 If you use the minor release tag, it will automatically point to future patch updates as they are released by the Rust Team.
-For example, the tag `1.39` points to Rust v1.39.0 now, but when the next release comes out, it will point to Rust v1.39.1.
+For example, the tag `1.43` points to Rust v1.43.0 now, but when the next release comes out, it will point to Rust v1.43.1.
 
 `[-variant]` - Variant tags, if available, can optionally be used.
-For example, the Node.js variant could be used like this: `cimg/rust:1.39-node`.
+For example, the Node.js variant could be used like this: `cimg/rust:1.43-node`.
 
 
 ## Development
@@ -111,19 +111,19 @@ git clone --recurse-submodules git@github.com:CircleCI-Public/cimg-rust.git
 ### Generating Dockerfiles
 
 Dockerfiles can be generated for a specific Rust version using the `gen-dockerfiles.sh` script.
-For example, to generate the Dockerfile for Rust v1.39.0, you would run the following from the root of the repo:
+For example, to generate the Dockerfile for Rust v1.43.0, you would run the following from the root of the repo:
 
 ```bash
-./shared/gen-dockerfiles.sh 1.39.0
+./shared/gen-dockerfiles.sh 1.43.0
 ```
 
-The generated Dockerfile will be located at `./1.39/Dockefile`.
+The generated Dockerfile will be located at `./1.43/Dockefile`.
 To build this image locally and try it out, you can run the following:
 
 ```bash
-cd 1.39
-docker build -t test/rust:1.39 .
-docker run -it test/rust:1.39 bash
+cd 1.43
+docker build -t test/rust:1.43.0 .
+docker run -it test/rust:1.43.0 bash
 ```
 
 ### Building the Dockerfiles
