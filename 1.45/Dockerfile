@@ -4,7 +4,7 @@ FROM cimg/base:2020.06
 
 LABEL maintainer="Community & Partner Engineering Team <community-partner@circleci.com>"
 
-ENV RUST_VERSION=1.45.0 \
+ENV RUST_VERSION=1.45.1 \
 	PATH=/home/circleci/.cargo/bin:$PATH
 
 RUN curl -O https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init && \
