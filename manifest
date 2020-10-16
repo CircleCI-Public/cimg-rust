@@ -2,4 +2,4 @@
 
 repository=rust
 parent=base
-variants=(node)
+variants=(node browsers)
