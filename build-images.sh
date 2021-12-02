@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-docker build --file 1.56/Dockerfile -t cimg/rust:1.56.1  -t cimg/rust:1.56 .
-docker build --file 1.56/node/Dockerfile -t cimg/rust:1.56.1-node  -t cimg/rust:1.56-node .
-docker build --file 1.56/browsers/Dockerfile -t cimg/rust:1.56.1-browsers  -t cimg/rust:1.56-browsers .
+docker build --file 1.57/Dockerfile -t cimg/rust:1.57.0  -t cimg/rust:1.57 .
+docker build --file 1.57/node/Dockerfile -t cimg/rust:1.57.0-node  -t cimg/rust:1.57-node .
+docker build --file 1.57/browsers/Dockerfile -t cimg/rust:1.57.0-browsers  -t cimg/rust:1.57-browsers .
