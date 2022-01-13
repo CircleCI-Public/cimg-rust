@@ -1,10 +1,10 @@
 # vim:set ft=dockerfile:
 
-FROM cimg/%%PARENT%%:2022.01
+FROM cimg/base:2022.01
 
 LABEL maintainer="Community & Partner Engineering Team <community-partner@circleci.com>"
 
-ENV RUST_VERSION=%%MAIN_VERSION%% \
+ENV RUST_VERSION=1.58.0 \
 	PATH=/home/circleci/.cargo/bin:$PATH
 
 RUN curl -O https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init && \
