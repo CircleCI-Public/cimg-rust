@@ -8,13 +8,12 @@
 	<h3>A Continuous Integration focused Rust Docker image built to run on CircleCI</h3>
 </div>
 
-[![CircleCI Build Status](https://circleci.com/gh/CircleCI-Public/cimg-rust.svg?style=shield)](https://circleci.com/gh/CircleCI-Public/cimg-rust) [![Software License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/CircleCI-Public/cimg-rust/main/LICENSE) [![Docker Pulls](https://img.shields.io/docker/pulls/cimg/rust)](https://hub.docker.com/r/cimg/rust) [![CircleCI Community](https://img.shields.io/badge/community-CircleCI%20Discuss-343434.svg)](https://discuss.circleci.com/c/ecosystem/circleci-images)
+[![CircleCI Build Status](https://circleci.com/gh/CircleCI-Public/cimg-rust.svg?style=shield)](https://circleci.com/gh/CircleCI-Public/cimg-rust) [![Software License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/CircleCI-Public/cimg-rust/main/LICENSE) [![Docker Pulls](https://img.shields.io/docker/pulls/cimg/rust)](https://hub.docker.com/r/cimg/rust) [![CircleCI Community](https://img.shields.io/badge/community-CircleCI%20Discuss-343434.svg)](https://discuss.circleci.com/c/ecosystem/circleci-images) [![Repository](https://img.shields.io/badge/github-README-brightgreen)](https://github.com/CircleCI-Public/cimg-rust)
 
-***This image is designed to supercede the legacy CircleCI Rust image, `circleci/rust`.***
+**_This image is designed to supercede the legacy CircleCI Rust image, `circleci/rust`._**
 
 `cimg/rust` is a Docker image created by CircleCI with continuous integration builds in mind.
 Each tag contains a complete Rust version and toolchain (such as rustfmt), and any binaries and tools that are required for builds to complete successfully in a CircleCI environment.
-
 
 ## Table of Contents
 
@@ -24,7 +23,6 @@ Each tag contains a complete Rust version and toolchain (such as rustfmt), and a
 - [Contributing](#contributing)
 - [Additional Resources](#additional-resources)
 - [License](#license)
-
 
 ## Getting Started
 
@@ -44,7 +42,6 @@ jobs:
 In the above example, the CircleCI Rust Docker image is used for the primary container.
 More specifically, the tag `1.43.0` is used meaning the version of Rust will be Rust v1.43.0.
 You can now use Rust within the steps for this job.
-
 
 ## How This Image Works
 
@@ -109,7 +106,6 @@ For example, the tag `1.43` points to Rust v1.43.0 now, but when the next releas
 
 `[-variant]` - Variant tags, if available, can optionally be used.
 For example, the Node.js variant could be used like this: `cimg/rust:1.43-node`.
-
 
 ## Development
 
@@ -215,12 +211,11 @@ git commit -m "Updating submodule for foo."
 This is to aid in "determinism" and prevent breaking customer builds.
 New Rust images will automatically pick up the changes.
 
-If you *really* want to publish changes from a parent image into the Rust image, you have to build a specific image version as if it was a new image.
+If you _really_ want to publish changes from a parent image into the Rust image, you have to build a specific image version as if it was a new image.
 This will create a new Dockerfile and once published, a new image.
 
 **Rust specific changes** - Editing the `Dockerfile.template` file in this repo is how to modify the Rust image specifically.
 Don't forget that to see any of these changes locally, the `gen-dockerfiles.sh` script will need to be run again (see above).
-
 
 ## Contributing
 
@@ -230,14 +225,12 @@ We encourage [issues](https://github.com/CircleCI-Public/cimg-rust/issues) to an
 1. PRs are welcome. If you have a PR that will potentially take a large amount of time to make, it will be better to open an issue to discuss it first to make sure it's something worth investing the time in.
 1. Issues should be to report bugs or request additional/removal of tools in this image. For help with images, please visit [CircleCI Discuss](https://discuss.circleci.com/c/ecosystem/circleci-images).
 
-
 ## Additional Resources
 
 [CircleCI Docs](https://circleci.com/docs/) - The official CircleCI Documentation website.
 [CircleCI Configuration Reference](https://circleci.com/docs/2.0/configuration-reference/#section=configuration) - From CircleCI Docs, the configuration reference page is one of the most useful pages we have.
 It will list all of the keys and values supported in `.circleci/config.yml`.
 [Docker Docs](https://docs.docker.com/) - For simple projects this won't be needed but if you want to dive deeper into learning Docker, this is a great resource.
-
 
 ## License
 
