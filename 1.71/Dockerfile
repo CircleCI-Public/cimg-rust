@@ -13,7 +13,8 @@ LABEL maintainer="Community & Partner Engineering Team <community-partner@circle
 ENV RUST_VERSION=1.71.0 \
 	PATH=/home/circleci/.cargo/bin:$PATH
 
-RUN curl -O https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init && \
+RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x86_64" || ARCH="aarch64" && \
+	curl -O https://static.rust-lang.org/rustup/dist/${ARCH}-unknown-linux-gnu/rustup-init && \
 	chmod +x rustup-init && \
 	./rustup-init -y --no-modify-path --default-toolchain $RUST_VERSION && \
 	rm rustup-init && \
