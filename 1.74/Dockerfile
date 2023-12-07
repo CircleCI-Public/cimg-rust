@@ -8,9 +8,9 @@
 
 FROM cimg/base:2023.07
 
-LABEL maintainer="Community & Partner Engineering Team <community-partner@circleci.com>"
+LABEL maintainer="CircleCI Execution Team <eng-execution@circleci.com>"
 
-ENV RUST_VERSION=1.74.0 \
+ENV RUST_VERSION=1.74.1 \
 	PATH=/home/circleci/.cargo/bin:$PATH
 
 RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x86_64" || ARCH="aarch64" && \
