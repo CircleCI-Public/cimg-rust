@@ -6,11 +6,11 @@
 # specific reason to use a different one. This means January, April, July, or
 # October.
 
-FROM cimg/%%PARENT%%:2024.01
+FROM cimg/base:2024.01
 
 LABEL maintainer="CircleCI Execution Team <eng-execution@circleci.com>"
 
-ENV RUST_VERSION=%%VERSION_FULL%% \
+ENV RUST_VERSION=1.75.0 \
 	PATH=/home/circleci/.cargo/bin:$PATH
 
 RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x86_64" || ARCH="aarch64" && \
