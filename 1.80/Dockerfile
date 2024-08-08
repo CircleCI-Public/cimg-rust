@@ -10,7 +10,7 @@ FROM cimg/base:2024.02
 
 LABEL maintainer="CircleCI Execution Team <eng-execution@circleci.com>"
 
-ENV RUST_VERSION=1.80.0 \
+ENV RUST_VERSION=1.80.1 \
 	PATH=/home/circleci/.cargo/bin:$PATH
 
 RUN [[ $(uname -m) == "x86_64" ]] && ARCH="x86_64" || ARCH="aarch64" && \
