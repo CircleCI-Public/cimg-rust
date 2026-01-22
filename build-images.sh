@@ -4,6 +4,6 @@ set -eo pipefail
 
 docker context create cimg
 docker buildx create --use cimg
-docker buildx build --platform=linux/amd64,linux/arm64 --file 1.92/Dockerfile -t cimg/rust:1.92.0 -t cimg/rust:1.92 --push .
-docker buildx build --platform=linux/amd64,linux/arm64 --file 1.92/node/Dockerfile -t cimg/rust:1.92.0-node -t cimg/rust:1.92-node --push .
-docker buildx build --platform=linux/amd64 --file 1.92/browsers/Dockerfile -t cimg/rust:1.92.0-browsers -t cimg/rust:1.92-browsers --push .
+docker buildx build --platform=linux/amd64,linux/arm64 --file 1.93/Dockerfile -t cimg/rust:1.93.0 -t cimg/rust:1.93 --push .
+docker buildx build --platform=linux/amd64,linux/arm64 --file 1.93/node/Dockerfile -t cimg/rust:1.93.0-node -t cimg/rust:1.93-node --push .
+docker buildx build --platform=linux/amd64 --file 1.93/browsers/Dockerfile -t cimg/rust:1.93.0-browsers -t cimg/rust:1.93-browsers --push .
